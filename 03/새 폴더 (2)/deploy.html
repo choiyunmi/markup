@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<title>deploy guide</title>
+<style type="text/css">
+@import url(http://fonts.googleapis.com/earlyaccess/nanumgothic.css);
+@import url(http://fonts.googleapis.com/css?family=Lato:400,700,900);
+/* reset */
+body,div,p,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,code,form,fieldset,legend,textarea,blockquote,th,td,input,select,textarea,button{margin:0;padding:0;}
+fieldset,img{border:0 none;}
+dl,ul,ol,menu,li {list-style:none;}
+blockquote, q {quotes: none;}
+blockquote:before, blockquote:after,q:before, q:after {content: '';content: none;}
+/* common */
+input,select,textarea,button {vertical-align:middle;}
+button {border:0 none;background-color:transparent;cursor:pointer;}
+body,th,td,input,select,textarea,button{font-size:14px;line-height:1.6;font-family:Nanum Gothic,Helvetica,Verdana,Arial,sans-serif;color:#34495e}
+a {color:#337ab7;text-decoration:none;}
+a:active, a:hover {text-decoration:underline;}
+address,caption,cite,code,dfn,var{font-style:normal;font-weight:normal}
+hr{display:none;}
+pre{
+  font-family:'verdana', 'trebuchet ms', sans-serif;
+  width:478px;
+  line-height:140%;
+  padding:10px;
+  margin:15px 0px;
+  border:1px solid #B0C4DE;
+  font-size:16px;
+  word-wrap:break-word;
+  height:auto;
+}
+body{overflow-y:scroll;background:#fff}
+h1{clear:both;font-family:'Lato',Helvetica,Arial,sans-serif;font-weight:900;line-height:1.3}
+h2 {font-size:26px;margin:30px 0 15px}
+h3{font-family:Nanum Gothic,Helvetica,Verdana,Arial,sans-serif;font-size:18px;margin:20px 0 4px 0}
+h3 strong{font-family:Arial, Tahoma, Verdana}
+table{border-bottom:1px solid #ededed;border-collapse:collapse;border-spacing:0;font-size:14px;line-height:2;margin:0 0 20px;width:100%;background:#fff}
+th,td{font-family:'Lato',Helvetica,Arial,sans-serif;padding:0 10px;text-align:left;font-size:14px;}
+table thead th{padding:6px 10px;background:#2f4154}
+table thead th span{color:#fff}
+table tbody th, table tbody td{border-top:1px solid #ededed}
+table tbody td{padding:6px 10px 6px 0}
+#container{padding:30px 0 200px 0;max-width:1000px;margin:0 auto}
+.entry-title{text-align:center}
+.entry-title strong{display:block;font-size:80px}
+.entry-title small{padding-top:5px;font-size:22px;color:rgba(52, 73, 94, .3);font-weight:700;}
+/* green */
+.iradio_square-green{display:inline-block;vertical-align:middle;width:16px;height:16px;background:url(http://fronteed.com/iCheck/skins/square/green.png) no-repeat;background-size:cover;}
+.iradio_square-green.checked{background-position:-112px 0}
+
+/* custom */
+ul,ol{padding:0 0 0 1.5em}
+ul li{margin:0 0 0 1.5em}
+ul li{ list-style:square outside;}
+
+img{margin:10px 0}
+
+.fix{overflow:hidden}
+.point_color{font-weight:bold;color:red}
+.desc{font-weight:bold;color:blue;background:#eee}
+.as{border:1px solid red}
+</style>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+
+<!-- SyntaxHighlighter -->
+<link type="text/css" rel="stylesheet" href="http://ts.daumcdn.net/custom/blog/35/353808/skin/images/shCoreDefault.css"/>
+<script type="text/javascript" src="http://ts.daumcdn.net/custom/blog/35/353808/skin/images/shCore.js"></script>
+<script type="text/javascript" src="http://ts.daumcdn.net/custom/blog/35/353808/skin/images/shBrushXml.js"></script>
+<script type="text/javascript" src="http://ts.daumcdn.net/custom/blog/35/353808/skin/images/shBrushCss.js"></script>
+<script type="text/javascript" src="http://ts.daumcdn.net/custom/blog/35/353808/skin/images/shBrushJScript.js"></script>
+<script type="text/javascript">SyntaxHighlighter.all();</script>
+<style type="text/css">
+.syntaxhighlighter{margin:10px 0px !important}
+</style>
+</head>
+<body>
+<div id="container">
+<h1 class="entry-title">
+    <strong>Deploy Process</strong>
+    <small>빌드, 배포, CDN purge, UI개발 실무</small>
+</h1>
+
+<h2>1. dev SVN 구조</h2>
+<h3>1.1 spring 기본폴더 구조</h3>
+<p>spring - 자바 언어로 웹어플리케이션을 만들기 mvc 패턴 프레임워크</p>
+<p>AngularJS, ember - 자바스크립트 mvc 패턴 프레임워크</p>
+<p><img src="img/01.png" alt=""></p>
+<h3>1.2 dev SVN 폴더 구조(<a href="http://svn.ssgadm.com/ssg/" target="_blank">http://svn.ssgadm.com/ssg/</a>)</h3>
+<div class="fix">
+    <img src="img/02.png" alt="" style="float:left;margin:0 20px 0 0">
+    <div>
+        <p class="desc">resources 폴더가 dev svn에 css,img,js 커밋하는 경로</p>
+        <p style="margin-top:10px">MVC 패턴</p>
+        <ul>
+            <li>모델(Model) - 상품명, 가격 등과 같은 데이터를 처리하는 부분</li>
+            <li>컨트롤러(Controller) - 사용자가 어떤 URL을 입력했을때 어떤 페이지를 보여줄껀지를 컨트롤하는 교통경찰 같은놈</li>
+            <li>뷰(View) - 말그대로 브라우저에 보여지는 페이지를 처리하는 부분</li>
+        </ul>
+
+        <p style="margin-top:10px" class="desc">사용자가 이벤트 메인 URL로 접속했을때<br>컨트롤러 RequestMapping에서 URL을 판단하고 return값으로 뷰페이지 jsp 경로를 반환<br></p>
+        <p>이벤트 메인 - <a href="http://www.ssg.com/event/eventMain.ssg" target="_blank">http://www.ssg.com/event/eventMain.ssg</a></p>
+
+        <p>controller - <a href="http://svn.ssgadm.com/ssg/01.front/ssg-ssgmall-webapp/trunk/src/main/java/ssg/scom/event/controller/EventController.java" target="_blank">http://svn.ssgadm.com/ssg/01.front/ssg-ssgmall-webapp/trunk/src/main/java/ssg/scom/event/controller/EventController.java</a></p>
+        <code>
+        <pre class="brush:js toolbar:false">
+        @RequestMapping(value="/event/eventMain")
+        public String eventMain(ModelMap model, FrontUserInfo userInfo) throws Exception {
+            ...
+            ...
+            ...
+            return "event/eventMain";
+        }
+        </pre>
+        </code>
+        <p class="desc">뷰페이지는 html을 토대로 개발 적용되는 부분만 jstl 문법으로 처리</p>
+        <p>view - <a href="http://svn.ssgadm.com/ssg/01.front/ssg-ssgmall-webapp/trunk/src/main/webapp/WEB-INF/view/jsp/event/eventMain.jsp" target="_blank">http://svn.ssgadm.com/ssg/01.front/ssg-ssgmall-webapp/trunk/src/main/webapp/WEB-INF/view/jsp/event/eventMain.jsp</a></p>
+    </div>
+</div>
+
+<h2>2. 빌드 배포</h2>
+<h3>2.1 빌드와 배포</h3>
+<ul>
+    <li>빌드 - target 디렉토리로 필요한 리소스 복사, 프로젝트의 소스코드를 컴파일하고 컴파일된 소스코드와 리소스들을 배포를 위한 패키지(jar,war)로 만드는 단계</li>
+    <li>배포 - 만들어진 패키지를 외부 저장소(dev,qa,stg,prod)에 release하는 단계</li>
+    <li>jar,war로 묶는과정 빌드, 서버에 올리는 작업 배포</li>
+</ul>
+<p style="margin-top:10px">배포 프로세스</p>
+<p><img src="img/03.png" alt=""></p>
+
+<div class="as">
+<h3>2.2 dev - qa - qa2 - stg - real 서버의 차이점</h3>
+
+<table border="0" width="100%" summary="" style="table-layout:fixed;">
+<colgroup>
+    <col width="64px">
+    <col width="">
+    <col width="">
+    <col width="">
+    <col width="">
+    <col width="">
+</colgroup>
+<thead>
+<tr>
+    <th><span><strong>분류</strong></span></th>
+    <th><span><strong>dev<br>(<a href="http://dev-www.ssg.com/" target="_blank">http://dev-www.ssg.com/</a>)</strong></span></th>
+    <th><span><strong>qa<br>(<a href="http://qa-www.ssg.com/" target="_blank">http://qa-www.ssg.com/</a>)</strong></span></th>
+    <th><span><strong>qa2<br>(<a href="http://qa2-www.ssg.com/" target="_blank">http://qa2-www.ssg.com/</a>)</strong></span></th>
+    <th><span><strong>stg<br>(<a href="http://stg-www.ssg.com/" target="_blank">http://stg-www.ssg.com/</a>)</strong></span></th>
+    <th><span><strong>real<br>(<a href="http://www.ssg.com/" target="_blank">http://www.ssg.com/</a>)</strong></span></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+    <th><strong>환경</strong></th>
+    <th>개발자 테스트 환경</th>
+    <th>qa 및 기획자 확인용 테스트 환경</th>
+    <th>공통상품유닛처럼 프로젝트 기간이 길고 수정되면 사이드이펙트가 큰 프로젝트 테스트용 환경</th>
+    <th>운영과 동일한 데이터 세팅된 테스트 환경</th>
+    <th>실제서비스 환경</th>
+</tr>
+<tr>
+    <th><strong>리소스경로</strong></th>
+    <th>http://dev-static.ssgcdn.com/</th>
+    <th>http://qa-static.ssgcdn.com/</th>
+    <th>http://qa-static.ssgcdn.com/</th>
+    <th>http://stg-static.ssgcdn.com/</th>
+    <th>http://static.ssgcdn.com/<br>https://sstatic.ssgcdn.com/ (ssl https)</th>
+</tr>
+<tr>
+    <th><strong>데이터</strong></th>
+    <th>개발자 테스트용</th>
+    <th>QA가 입력한 테스트용</th>
+    <th></th>
+    <th>실서비스 운영 데이터</th>
+    <th>실서비스 운영 데이터</th>
+</tr>
+</tbody>
+</table>
+
+<h3>2.3 운영서버 1번기 / 2번기란..</h3>
+<p><img src="img/03_1.png" alt=""></p>
+<ul style="margin-bottom:10px">
+<li><p>웹애플리케이션 서버에 배포를 하려면 먼저 서버를 중단시켜고 배포 완료 후 서버를 재시작 해야함</p></li>
+<li><p>만약 서버가 한대고 배포를 위해 중단된다면 사용자는 서버가 없다는 에러를 만나게 된다. qa나 dev 가끔 접속 안될때 있죠. 배포중이라서 그래용</p></li>
+<li><p class="point_color">SSG에서는 무중단 서비스를 지원하기 1번기/2번기 나눠서 배포를 진행</p></li>
+</ul>
+
+<p>LVS(로드밸런싱) 모니터 <a href="http://jenkins.ssgadm.com:8080/lvs/dashboard.php" target="_blank">http://jenkins.ssgadm.com:8080/lvs/dashboard.php</a><br>- 1번기가 중단되면 사용자를 2번기로 몰고 2번기가 중단되면 다시 1번기로 요런 역할 하는놈<br><img src="img/03_2.png" alt=""></p>
+
+<p class="point_color">개발자가 1번기 배포되었는데 1번기에서 UI가 깨져요 문의한다면~~ hosts 파일에서 #운영1번기 하단 ip목록 # 제거하면 운영 1번기로 접속됨</p>
+<code>
+<pre class="brush:html toolbar:false highlight:[11]">
+step1. 초기파일
+#qa2  Qa2 호스트
+202.8.174.151     qa2-www.ssg.comqa2-customer.sfcmall.comqa2-customer.sfcmall.emart.com
+202.8.174.151     qa2-emart.ssg.com qa2-sfcmall.emart.com qa2-boons.ssg.com qa2-traders.ssg.com qa2-shinsegaemall.ssg.com 
+202.8.174.151     qa2-www.sfcmall.comqa2-department.ssg.comqa2-dept.sfcmall.comqa2-ferragamo.department.ssg.com
+202.8.174.151     qa2-m.ssg.com qa2-mw.customer.sfcmall.com qa2-m.emart.ssg.com qa2-m.shinsegaemall.ssg.com qa2-mw.sfcmall.com 
+202.8.174.151     qa2-mw.lguplusshopping.co.kr qa2-pay.ssg.com qa2-pay.sfcmall.com qa2-pay.sfcmall.emart.com 
+202.8.174.151     qa2-pay.lguplusshopping.co.kr qa2-member.ssg.com qa2-member.sfcmall.com, qa2-member.sfcmall.emart.com 
+202.8.174.151     qa2-member.lguplusshopping.co.kr qa2-uapi.ssglocal.com qa2-api.m.ssg.com
+
+#운영 1번기
+202.8.174.31 bo.ssgadm.com pdo.ssgadm.com po.ssgadm.com pco.ssgadm.com
+202.8.174.21 cso.ssgadm.com
+202.8.173.11 www.ssg.com
+202.8.173.31 emart.ssg.com boons.ssg.com traders.ssg.com sfcmall.emart.com
+202.8.173.21 shinsegaemall.ssg.com department.ssg.com _www.sfcmall.comdept.sfcmall.com
+202.8.173.17 pay.ssg.com pay.sfcmall.emart.com pay.sfcmall.com pay.ssg.com/m pay.sfcmall.com/m 
+202.8.173.19 member.ssg.com member.sfcmall.emart.com member.sfcmall.com  member.ssg.com/m member.sfcmall.com/m
+202.8.173.28 m.ssg.com
+202.8.173.26 m.emart.ssg.com
+202.8.173.35 m.shinsegaemall.ssg.com mw.sfcmall.com mw.lguplusshopping.co.kr m.cn.ssg.com
+#origin 이미지서버
+#202.8.173.156 static.ssgcdn.com 
+
+#운영 2번기
+#202.8.174.32 bo.ssgadm.com pdo.ssgadm.com po.ssgadm.com pco.ssgadm.com
+#202.8.174.22 cso.ssgadm.com
+#202.8.173.12 www.ssg.com
+#202.8.173.32 emart.ssg.com boons.ssg.com traders.ssg.com sfcmall.emart.com
+#202.8.173.22 shinsegaemall.ssg.com department.ssg.com _www.sfcmall.comdept.sfcmall.com
+#202.8.173.18 pay.ssg.com pay.sfcmall.emart.com pay.sfcmall.com pay.ssg.com/m pay.sfcmall.com/m 
+#202.8.173.20 member.ssg.com member.sfcmall.emart.com member.sfcmall.com  member.ssg.com/m member.sfcmall.com/m
+#202.8.173.29 m.ssg.com
+
+10.149.186.136 local-emart.ssg.com
+
+#글로벌
+127.0.0.01 local-html.global2.ssg.com
+202.8.174.167 dev-html.global2.ssg.com
+</pre>
+</code>
+</div>
+
+<h3>2.4 배포 프로세스 타임테이블 -표준</h3>
+<p><img src="img/04.png" alt=""></p>
+<ul>
+    <li><strong>원칙적으로 금요일에 dev 빌드 마감/ 이 때 빌드된 패키지가 qa(월), 스테이징(화), 운영(수)에 복사되어 배포만 된다.</strong></li>
+    <li><strong class="point_color">화요일날 css 수정하고 운영에 올려놔도 금요일 빌드 마감 때 묶였던 css 파일이 수요일에 배포되면 덮어씌워진다.</strong></li>
+    <li class="as"><strong class="point_color">※예외 - 프로모션 이미지 폴더처럼 dev svn에 커밋안하고 바로 ftp로 올리는 리소스는 빌드때 묶이지 않으므로 배포때 덮어씌워지지 않는다.</strong></li>
+</ul>
+
+<h2>3. CDN purge</h2>
+<h3>3.1 CDN(Content delivery network)</h3>
+<p><img src="img/05.png" alt=""></p>
+<p>CDN Cache Server는 이용자와 가까운 곳에서 위치하고 Origin Server의 콘텐츠를 캐싱하여<br> Origin Server를 대신하여 콘텐츠를 이용자에게 다운로드 해 주는 역할을 합니다.<br>Cache Server는 이용자와의 거리가 Origin Server 보다 가깝기 때문에 빠른 다운로드가 가능</p>
+<h3>3.2 CDN 동작</h3>
+<p>콘텐츠 초기요청 등 콘텐츠가 Cache Server에 없는 경우(즉 Origin Server에 새파일이 추가된 경우) : Origin Server로부터 콘텐츠 전송응답 및 캐싱</p>
+<p><img src="img/06.gif" alt=""></p>
+<p>Cache Server에 콘텐츠가 있는 경우 : <b class="point_color">캐시 유효기간내인 경우 Origin Server와 통신없이 직접 응답</b>, 캐시 유효기간이 만료되었을 경우 Origin Server에 유효성 검사</p>
+<p><img src="img/07.gif" alt=""></p>
+<p>유효성검사 : request header의 수정된 날짜와 response header의 수정된 날짜를 비교하여 같으면 304 상태코드만 전송, 다르면 200 상태코드와 파일 전송</p>
+<ul></ul>
+<p><img src="img/08.png" alt=""></p>
+<h3>3.3 purge</h3>
+<p> Origin Server에 콘텐츠를 동일한 이름으로 덮어쓰기 수정한 경우 :<br> 
+Origin Server에서 동일한 이름의 콘텐츠(css,img,js) 파일을 update한 경우,
+업로드한 순간 Origin Server는 변경이 되겠지만,<br>
+Cache Server는 Cache 정책에 따라 해당 콘텐츠(css,img,js)의 유효기간(Time To Live)이 지나야 Origin에서 다시 읽어온다고 보시면 됩니다.<br>
+Origin Server의 콘텐츠(css,img,js)를 변경하고 이 결과를 Cache Server(Edge Server)에도 반영할 때 사용하는 기능이 Cache Purge 기능입니다.</p>
+<ul style="margin-top:10px">
+    <li>Origin Server 경로 - <a href="http://ori-static.ssgcdn.com/ui/ssg/css/promotion/purge_test.css" target="_blank">http://ori-static.ssgcdn.com/ui/ssg/css/promotion/purge_test.css</a></li>
+    <li>CDN Server 경로 - <a href="http://static.ssgcdn.com/ui/ssg/css/promotion/purge_test.css" target="_blank">http://static.ssgcdn.com/ui/ssg/css/promotion/purge_test.css</a></li>
+</ul>
+<p><img src="img/09.png" alt=""></p>
+<ul>
+    <li>Cache Purge - <a href="http://svn.ssgadm.com/ssgui/ssg-ui/scom/purge.html" target="_blank">http://svn.ssgadm.com/ssgui/ssg-ui/scom/purge.html</a><br><b class="point_color">결론 덮어쓰기로 수정한 경우 purge를 해야 사용자가 바라보는 CDN 서버에 반영된다.</b><br><b class="point_color as">purge는 운영 서버에 올린 리소스만 해주시면 됩니다.(dev,qa,stg는 테스트용으로 cdn이 적용된게 아님, 파일 올리면 바로 반영됨)  </b></li>
+</ul>
+<p><img src="img/10.png" alt=""></p>
+<ul>
+    <li>자신이 수정한 로그 확인 - 검색창에 사번 또는 레드마인 number로 필터링, modifed 파란색만 purge 하면 됨</li>
+    <li><b class="point_color">운영배포날에 본인이 수정한 css가 반드시 반영되어야 한다면 배포전에 리소스 업로드 후 purge, 배포후에 리소스 업로드 후 purge하면 신경쓸일 없음</b></li>
+    <li>dev SVN에는 언제 배포가 되어도 이슈 없는 리소스들만 업로드되어야 합니다.</li>
+</ul>
+<p><img src="img/11.png" alt=""></p>
+
+<h2>4. UI개발 실무</h2>
+<h3>4.1 개발 배포 이슈 없는 버전 관리 마크업 방법(v1, v2)</h3>
+
+<code>
+<pre class="brush:html toolbar:false">
+step1. 초기파일
+<style type="text/css">
+.com_detail .cdtl_tab{position:relative;width:600px;margin:0 auto;padding:0;background:#eee}
+.com_detail .cdtl_tab:after{display:block;clear:both;content:''}
+.com_detail .cdtl_tab li{float:left;width:25%;margin:0;padding:0;list-style:none}
+.com_detail .cdtl_tab li:first-child a{margin-left:0}
+.com_detail .cdtl_tab li a{display:block;height:53px;margin-left:-1px;border:1px solid #e9e9e9;background-color:#fff;font-size:15px;line-height:53px;color:#222;text-align:center;text-decoration:none}
+.com_detail .cdtl_tab li.on{position:relative}
+.com_detail .cdtl_tab li.on a{border-color:#3b3b3b;background:#3b3b3b;color:#fff}
+</style>
+
+<div class="com_detail">
+    <ul class="cdtl_tab">
+    <li class="on"><a href="#">상품정보</a></li>
+    <li><a href="#">혜택/구매정보</a></li>
+    <li><a href="#">상품평</a></li>
+    <li><a href="#">Q&amp;A</a></li>
+    </ul> 
+</div>
+
+step2. 탭메뉴를 3개로 수정해 주세요. css v2로 재정의, 마크업 v2 클래스 추가
+<style type="text/css">
+.com_detail .cdtl_tab{position:relative;width:600px;margin:0 auto;padding:0;background:#eee}
+.com_detail .cdtl_tab:after{display:block;clear:both;content:''}
+.com_detail .cdtl_tab li{float:left;width:25%;margin:0;padding:0;list-style:none}
+.com_detail .cdtl_tab li:first-child a{margin-left:0}
+.com_detail .cdtl_tab li a{display:block;height:53px;margin-left:-1px;border:1px solid #e9e9e9;background-color:#fff;font-size:15px;line-height:53px;color:#222;text-align:center;text-decoration:none}
+.com_detail .cdtl_tab li.on{position:relative}
+.com_detail .cdtl_tab li.on a{border-color:#3b3b3b;background:#3b3b3b;color:#fff}
+
+.com_detail .cdtl_tab.v2{position:relative;width:600px;margin:0 auto;padding:0;background:#eee}
+.com_detail .cdtl_tab.v2:after{display:block;clear:both;content:''}
+.com_detail .cdtl_tab.v2 li{float:left;width:33.33%;margin:0;padding:0;list-style:none}
+.com_detail .cdtl_tab.v2 li:first-child a{margin-left:0}
+.com_detail .cdtl_tab.v2 li a{display:block;height:53px;margin-left:-1px;border:1px solid #e9e9e9;background-color:#fff;font-size:15px;line-height:53px;color:#222;text-align:center;text-decoration:none}
+.com_detail .cdtl_tab.v2 li.on{position:relative}
+.com_detail .cdtl_tab.v2 li.on a{border-color:#3b3b3b;background:#3b3b3b;color:#fff}
+</style>
+
+<div class="com_detail">
+    <ul class="cdtl_tab v2">
+    <li class="on"><a href="#">상품정보</a></li>
+    <li><a href="#">혜택/구매정보</a></li>
+    <li><a href="#">상품평</a></li>
+    </ul> 
+</div>
+
+step3. 배포 완료 - 원본삭제, .v2 클래스 삭제, 불필요 css 삭제
+<style type="text/css">
+.com_detail .cdtl_tab{position:relative;width:600px;margin:0 auto;padding:0;background:#eee}
+.com_detail .cdtl_tab:after{display:block;clear:both;content:''}
+.com_detail .cdtl_tab li{float:left;width:33.33%;margin:0;padding:0;list-style:none}
+.com_detail .cdtl_tab li:first-child a{margin-left:0}
+.com_detail .cdtl_tab li a{display:block;height:53px;margin-left:-1px;border:1px solid #e9e9e9;background-color:#fff;font-size:15px;line-height:53px;color:#222;text-align:center;text-decoration:none}
+.com_detail .cdtl_tab li.on{position:relative}
+.com_detail .cdtl_tab li.on a{border-color:#3b3b3b;background:#3b3b3b;color:#fff}
+</style>
+
+step4. 탭메뉴를 2개로 수정해 주세요. css v1로 재정의, 마크업 v1 클래스 추가
+<style type="text/css">
+.com_detail .cdtl_tab{position:relative;width:600px;margin:0 auto;padding:0;background:#eee}
+.com_detail .cdtl_tab:after{display:block;clear:both;content:''}
+.com_detail .cdtl_tab li{float:left;width:33.33%;margin:0;padding:0;list-style:none}
+.com_detail .cdtl_tab li:first-child a{margin-left:0}
+.com_detail .cdtl_tab li a{display:block;height:53px;margin-left:-1px;border:1px solid #e9e9e9;background-color:#fff;font-size:15px;line-height:53px;color:#222;text-align:center;text-decoration:none}
+.com_detail .cdtl_tab li.on{position:relative}
+.com_detail .cdtl_tab li.on a{border-color:#3b3b3b;background:#3b3b3b;color:#fff}
+
+.com_detail .cdtl_tab.v1{position:relative;width:600px;margin:0 auto;padding:0;background:#eee}
+.com_detail .cdtl_tab.v1:after{display:block;clear:both;content:''}
+.com_detail .cdtl_tab.v1 li{float:left;width:50%;margin:0;padding:0;list-style:none}
+.com_detail .cdtl_tab.v1 li:first-child a{margin-left:0}
+.com_detail .cdtl_tab.v1 li a{display:block;height:53px;margin-left:-1px;border:1px solid #e9e9e9;background-color:#fff;font-size:15px;line-height:53px;color:#222;text-align:center;text-decoration:none}
+.com_detail .cdtl_tab.v1 li.on{position:relative}
+.com_detail .cdtl_tab.v1 li.on a{border-color:#3b3b3b;background:#3b3b3b;color:#fff}
+</style>
+
+<div class="com_detail">
+    <ul class="cdtl_tab v1">
+    <li class="on"><a href="#">상품정보</a></li>
+    <li><a href="#">혜택/구매정보</a></li>
+    </ul> 
+</div>
+
+step5. 배포 완료 - 원본삭제, .v1 클래스 삭제, 불필요 css 삭제
+<style type="text/css">
+.com_detail .cdtl_tab{position:relative;width:600px;margin:0 auto;padding:0;background:#eee}
+.com_detail .cdtl_tab:after{display:block;clear:both;content:''}
+.com_detail .cdtl_tab li{float:left;width:50%;margin:0;padding:0;list-style:none}
+.com_detail .cdtl_tab li:first-child a{margin-left:0}
+.com_detail .cdtl_tab li a{display:block;height:53px;margin-left:-1px;border:1px solid #e9e9e9;background-color:#fff;font-size:15px;line-height:53px;color:#222;text-align:center;text-decoration:none}
+.com_detail .cdtl_tab li.on{position:relative}
+.com_detail .cdtl_tab li.on a{border-color:#3b3b3b;background:#3b3b3b;color:#fff}
+</style>
+
+
+step6. 탭메뉴를 1개로 수정해 주세요. css v2로 재정의, 마크업 v2 클래스 추가(step2번 과정부터 반복 v2 v1 돌려쓰기)
+
+</pre>
+</code>
+
+<iframe height='265' scrolling='no' title='v class' src='https://codepen.io/techkhc9/embed/weOMdW/?height=265&theme-id=0&default-tab=html,result&embed-version=2' frameborder='no' allowtransparency='true' allowfullscreen='true' style='width: 100%;'>See the Pen <a href='https://codepen.io/techkhc9/pen/weOMdW/'>v class</a> by techkhc9 (<a href='https://codepen.io/techkhc9'>@techkhc9</a>) on <a href='https://codepen.io'>CodePen</a>.
+</iframe>
+
+<h3>4.2 종류가 다른 UI와 기획의 다양한 요구 대응을 위한 ty 클래스(ty_basic ty_hotdeal ty_special)</h3>
+
+
+<code>
+<pre class="brush:html toolbar:false highlight:[13,17,24,31]">
+일반상세만 부츠일때 탭활성화 색상 파란색으로 바꿔주세요.
+
+<style type="text/css">
+/* 완전 공통 */
+.com_detail .cdtl_tab{position:relative;width:600px;margin:0 auto;padding:0;background:#eee}
+.com_detail .cdtl_tab:after{display:block;clear:both;content:''}
+.com_detail .cdtl_tab li{float:left;width:25%;margin:0;padding:0;list-style:none}
+.com_detail .cdtl_tab li:first-child a{margin-left:0}
+.com_detail .cdtl_tab li a{display:block;height:53px;margin-left:-1px;border:1px solid #e9e9e9;background-color:#fff;font-size:15px;line-height:53px;color:#222;text-align:center;text-decoration:none}
+.com_detail .cdtl_tab li.on{position:relative}
+.com_detail .cdtl_tab li.on a{border-color:#3b3b3b;background:#3b3b3b;color:#fff}
+/* 일반상세 부츠만 대응 가능 */
+.body_boots .com_detail.ty_basic .cdtl_tab li.on a{border-color:#cae0f5;background:#cae0f5;color:#004990}
+</style>
+
+<!-- 일반상세 - 기본형에도 클래스를 지정하는게 keypoint -->
+<div class="com_detail ty_basic"> 
+    <ul class="cdtl_tab">
+    <li class="on"><a href="#">상품정보</a></li>
+    <li><a href="#">혜택/구매정보</a></li>
+    </ul> 
+</div>
+<!-- 핫딜상세 -->
+<div class="com_detail ty_hotdeal">
+    <ul class="cdtl_tab">
+    <li class="on"><a href="#">상품정보</a></li>
+    <li><a href="#">혜택/구매정보</a></li>
+    </ul> 
+</div>
+<!-- 전문관상세 -->
+<div class="com_detail ty_special">
+    <ul class="cdtl_tab">
+    <li class="on"><a href="#">상품정보</a></li>
+    <li><a href="#">혜택/구매정보</a></li>
+    </ul> 
+</div>
+
+</pre>
+</code>
+
+<h3>4.3 소스코드 오류 체크 후 개발전달</h3>
+<ul>
+    <li>SSG HTML Validator 크롬 익스텐션 - HTML5 문법검사(<a href="http://svn.ssgadm.com/ssgui/01.ssg/pcweb/trunk/guide/ssg_html_validator/ssg_html_validator.html" target="_blank">http://svn.ssgadm.com/ssgui/01.ssg/pcweb/trunk/guide/ssg_html_validator/ssg_html_validator.html</a>)</li>
+    <li>htmlhint - 닫는 태그 tag-pair 검사(<a href="http://htmlhint.com/" target="_blank">http://htmlhint.com/</a>)</li>
+    <li>csslint - css 오타만 확인(<a href="http://csslint.net/" target="_blank">http://csslint.net/</a>)</li>
+    <li>접근성 - nwax, pajet, K-WAH4.0 등</li>
+</ul>
+
+</div>
+</body>
+</html>
